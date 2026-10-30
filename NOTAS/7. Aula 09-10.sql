@@ -193,3 +193,54 @@ go
 EXEC usp_inserir 80, 'José', 600;
 SELECT * FROM conta;
 		
+-- Exercício --
+-- 1) Autocommit × Transação Explícita Tarefa: Insira dois departamentos: um em modo autocommit 
+-- e outro dentro de uma transação explícita. Em seguida, desfaça o segundo (Rollback) e confirme 
+-- o primeiro. Entregável: Demonstre, por consulta, qual linha permaneceu e explique por quê.
+INSERT INTO DEPARTAMENTO (Dnome, Dnumero)
+VALUES ('Marketing', 9);
+
+BEGIN TRANSACTION;
+
+INSERT INTO DEPARTAMENTO (Dnome, Dnumero)
+VALUES ('Financeiro', 10);
+
+ROLLBACK TRANSACTION;
+
+SELECT Dnumero, Dnome
+FROM DEPARTAMENTO
+WHERE Dnumero IN (9, 10);
+
+
+-- 3) UPDATE com Conferência e Decisão Tarefa: Inicie transação, atualize o endereço de um funcionário 
+-- específico, conferir a alteração e então decidir entre COMMIT ou ROLLBACK com base na conferência. 
+-- Entregável: Registre a decisão e o estado final do registro.
+BEGIN TRANSACTION;
+
+SELECT Pnome, Unome, Endereco
+FROM FUNCIONARIO
+WHERE Cpf = '12345678966';
+
+UPDATE FUNCIONARIO
+SET Endereco = 'Rua das Palmeiras, 100, São Paulo, SP'
+WHERE Cpf = '12345678966';
+
+SELECT Pnome, Unome, Endereco
+FROM FUNCIONARIO
+WHERE Cpf = '12345678966';
+
+IF EXISTS (
+    SELECT 1
+    FROM FUNCIONARIO
+    WHERE Cpf = '12345678966'
+      AND Endereco = 'Rua das Palmeiras, 100, São Paulo, SP'
+)
+BEGIN
+    COMMIT TRANSACTION;
+    PRINT 'COMMIT realizado: endereço atualizado corretamente.';
+END
+ELSE
+BEGIN
+    ROLLBACK TRANSACTION;
+    PRINT 'ROLLBACK realizado: alteração desfeita.';
+END;
